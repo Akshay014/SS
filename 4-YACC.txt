@@ -1,0 +1,135 @@
+Lex Part:
+gedit  lab4.l
+
+%{
+#include "y.tab.h"
+%}
+%%
+"id"	 {return id;}
+"+"	  {return plus;}
+"*"	  {return star;}
+"("	  {return opar;}
+")"	  {return cpar;}
+. 	return yytext[0];
+\n	 return 0;
+%%
+
+Yacc Part :
+gedit lab4.y
+%{
+#include<stdio.h>
+#include<string.h>
+extern FILE *yyin;
+char inp[30],stack[30];
+ int inpCount, sCount;
+%}
+%token id 
+%token plus
+%token star
+%token opar
+%token cpar
+
+
+%%
+E : E P T	{	
+printf("$%s\t%s$\tREDUCE E -> E+T\n",stack,inp);
+sCount -= 3;
+			stack[sCount++] = 'E';
+			stack[sCount] = '\0';
+		}
+
+	| T	{	
+printf("$%s\t%s$\tREDUCE E -> T\n",stack,inp);
+			sCount -= 1;
+			stack[sCount++] = 'E';
+			stack[sCount] = '\0';
+		}
+
+T : T S F	{	
+printf("$%s\t%s$\tREDUCE T -> T*F \n",stack,inp);
+sCount -= 3;
+			stack[sCount++] = 'T';
+			stack[sCount] = '\0';
+}
+
+	| F	{	
+printf("$%s\t%s$\tREDUCE T -> F \n",stack,inp);
+sCount -= 1;
+stack[sCount++] = 'T';
+			stack[sCount] = '\0';
+		}
+
+F : O E C 	{	
+printf("$%s\t%s$\tREDUCE F -> (E)  \n",stack,inp);
+sCount -= 3;
+			stack[sCount++] = 'F';
+			stack[sCount] = '\0';
+  		}
+
+
+
+F : id		{	
+printf("$%s\t%s$\tSHIFT id\n",stack,inp);
+			inp[inpCount++] = ' ';
+			inp[inpCount++] = ' ';
+			stack[sCount++] = 'i';
+			stack[sCount++] = 'd';
+			stack[sCount] = '\0';
+
+			printf("$%s\t%s$\tREDUCE F-> id\n",stack,inp);
+			sCount -= 2;
+			stack[sCount++] = 'F';
+			stack[sCount] = '\0';
+		}
+
+O : opar	{	
+printf("$%s\t%s$\tSHIFT (\n",stack,inp);
+	 		inp[inpCount++] = ' ';
+	 		stack[sCount++] = '(';
+	 		stack[sCount] = '\0';
+		}
+
+C : cpar	{	
+printf("$%s\t%s$\tSHIFT )\n",stack,inp);
+inp[inpCount++] = ' ';
+	 		stack[sCount++] = ')';
+	 		stack[sCount] = '\0';
+		}
+
+P : plus	{	
+printf("$%s\t%s$\tSHIFT +\n",stack,inp);
+	 		inp[inpCount++] = ' ';
+	 		stack[sCount++] = '+'
+	 		stack[sCount] = '\0';
+		}
+
+
+S : sta r	{	
+printf("$%s\t%s$\tSHIFT *\n",stack,inp);
+			inp[inpCount++] = ' ';
+	 		stack[sCount++] = '*';
+	 		stack[sCount] = '\0';
+		}
+;
+%%
+
+void main(){
+printf("Enter the input : \n");
+	scanf("%s",inp);
+	FILE *fp = fopen("temp.txt","w");
+	fprintf(fp,"%s",inp);
+	fclose(fp);
+	yyin = fopen("temp.txt","r");
+	printf("Stack\tInput\tAction\n");
+	yyparse();
+
+	if(sCount == 1 && stack[sCount-1] == 'E' && inp[inpCount]=='\0')
+{
+		printf("$%s\t%s$\tSuccess\n",stack,inp);
+	}
+}
+
+int yyerror(){
+printf("$%s\t%s$\tError\n",stack,inp);
+}
+
