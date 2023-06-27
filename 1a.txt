@@ -1,0 +1,88 @@
+%{
+#include<stdio.h>
+#include<string.h>
+int nooper=0,nooperand=0,top=0,i=0,j=0,tnooper=0,tnoopnd=0,valid=0;
+char opnd[10][10],opert[10][10];
+%}
+%%
+"(" { valid =1;}
+")" { valid=0;}
+"+"|"*" {nooper++; strcpy(opert[i],yytext);i++;}
+[0-9]+ {nooperand++; strcpy(opnd[j],yytext);j++;}
+[^+*]"("[^0-9] YYFAIL();
+%%
+int main()
+{
+int k;
+printf("Enter the expression\n");
+yylex();
+if(valid==0 &&(nooperand-nooper)==1)
+{
+printf("The exp is valid\n");
+printf("The operator are\n");
+for(k=0;k<i;k++)
+printf("%s\n",opert[k]);
+printf("The operands are\n");
+for(k=0;k<j;k++)
+printf("%s\n",opnd[k]);
+}
+else{
+printf("The exp is invalid");
+return 0;
+ }
+}
+int YYFAIL()
+{ 
+printf("Invalid");
+exit(0);
+}
+
+
+//1b
+%{
+#include "y.tab.h"
+#include <stdlib.h>
+extern int yylval;
+%}
+%%
+[0-9]+ {yylval=atoi(yytext);
+return NUM;}
+\n {return 0;}
+. {return yytext[0];}
+%%
+YACC PART
+%{
+#include<stdio.h>
+int valid=1;
+%}
+%token NUM
+%left '+' '-'
+%left '*' '/'
+%%
+Stmt:expr{if(valid)
+{
+printf("Result=%d\n",$$);}
+}
+expr:expr'+'expr {$$=$1+$3;}
+ |expr'-'expr {$$=$1-$3;}
+ |expr'*'expr {$$=$1*$3;}
+ |expr'/'expr {if($3==0){
+valid=0;printf("Divide by zero error\n");}
+else
+$$=$1/$3;}
+ |'('expr')' {$$=$2;}
+ |NUM {$$=$1;}
+ ;
+%%
+main()
+{
+printf("Enter arithmetic exression:\n");
+yyparse();
+if(valid==1)
+printf("Expression is valid\n");
+}
+int yyerror()
+{
+printf("Invalid expression\n");
+exit(0);
+}

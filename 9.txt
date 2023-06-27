@@ -1,0 +1,70 @@
+#include <stdio.h> #include <stdlib.h> #include <string.h> int S[100];
+int A[10][100];
+int len, nf, i, j, v, f, h, k, ctn; void read()
+{
+int i;
+printf("Enter The No Of Frames : "); scanf("%d", &nf);
+printf("Enter The Length : "); scanf("%d", &len);
+printf("Enter The String : ");
+for (i = 0; i < len; i++)
+scanf("%d", &S[i]); }
+void display() {
+for (i = 0; i < len; i++) printf("%d ", S[i]);
+printf("\n\n");
+for (i = 0; i <= nf; i++) {
+for (j = 0; j < len; j++) {
+if (A[i][j] == -1) printf(" ");
+else
+printf("%d ", A[i][j]);
+}
+if (i == nf - 1)
+printf("\n"); printf("\n");
+}
+printf("No of Hits : %d\n", h); printf("No of Faults : %d\n", (len - h));
+}
+void setInit() {
+for (i = 0; i < nf; i++) A[i][0] = -1;
+A[0][0] = S[0]; }
+void alg(int type) {
+h = 0;
+for (j = 1; j < len; j++) {
+f = 0;
+int C[10] = { 0 };
+for (i = 0; i < nf; i++) {
+A[i][j] = A[i][j - 1]; if (A[i][j] == S[j])
+f = 1; }
+if (f) {
+A[nf][j] = 1;
+h++; }
+else {
+if (type == 1) // LRU {
+ctn = 0;
+for (i = j - 1; i >= 0 && ctn < nf - 1; i--)
+for (k = 0; k < nf; k++) if (A[k][j] == S[i]) {
+C[k] = 1;
+ctn++; }
+v = 0;
+for (i = 0; i < nf; i++)
+if (C[i] == 0) {
+v = i;
+break; }
+A[v][j] = S[j]; }
+else // FIFO {
+A[v][j] = S[j];
+v = (v + 1) % nf; }
+} }
+}
+int main() {
+int ch; while (1) {
+printf("1)FIFO 2)LRU 3)EXIT\nEnter The Choice : "); scanf("%d", &ch);
+v = 1;
+switch (ch)
+{
+case 1:
+read(); setInit(); alg(0); display(); break;
+case 2: read();
+setInit(); alg(1); display(); break;
+case 3: exit(0);
+} 
+}
+}

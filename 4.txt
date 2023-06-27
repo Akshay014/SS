@@ -1,0 +1,106 @@
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+char G[6][10]={"E+T","T*F","(E)","T","F","id"};
+char L[6]={'E','T','F','E','T','F'};
+char stk[20]="$";
+char inpt[20];
+char pr[20],temp[20];
+int i,j,k,f,len,lens,lenr,top=1,index1;
+void extract()
+{
+ for(k=0;k<lenr;k++)
+ temp[k]=stk[lens-lenr+k+1];
+ temp[k]='\0';
+}
+void print()
+{
+ printf("%s\t\t%s$\t\t%s\n",stk,inpt,pr);
+}
+void shift()
+{
+if(inpt[len-1]==' ')
+{
+ sprintf(pr,"ERROR");
+ print();
+ exit(0);
+}
+ stk[top++]=inpt[i];
+ if(inpt[i]=='i' && inpt[i+1]=='d')
+ {
+ stk[top++]=inpt[i+1];
+ inpt[i+1]=' ';
+ inpt[i]=' ';
+ sprintf(pr,"SHIFT id");
+ i++;
+ }
+ else
+ {
+ sprintf(pr,"SHIFT %c",inpt[i]);
+ inpt[i]=' ';
+ }
+ print();
+}
+void reduce()
+{
+ int l=strlen(stk);
+ stk[l-lenr]=L[index1];
+ top=l-lenr+1;
+ for(k=top;k<20;k++)
+ stk[k]='\0';
+ sprintf(pr,"REDUCE %c->%s",L[index1],G[index1]);
+ print();
+}
+int main1()
+{
+ printf("The given GRAMMAR is \nE->E+T|T\nT->T*F|F\nF->(E)|id\n");
+ printf("Enter The String : ");
+ scanf("%[^\n]",inpt);
+ len=strlen(inpt);
+ printf("STACK\t\tINPUT\t\t\tACTION\n");
+ print(pr);
+ i=0;
+ lens=strlen(stk)-1;
+ while(i<len || lens>0)
+ {
+ f=0;
+ lens=strlen(stk)-1;
+ if(stk[1]=='E' && lens==1 && inpt[len-1]==' ')
+ {
+ sprintf(pr,"ACCEPT");
+ print();
+ break;
+ }
+ if(lens==0)
+ {
+ shift();
+ i++;
+ continue;
+ }
+ for(j=0;j<6;j++)
+ {
+ lenr=strlen(G[j]);
+ if(lens<lenr)
+ continue;
+ extract();
+ if(strcmp(temp,G[j])==0)
+ {
+ if((j==0 || j==3) && inpt[i]=='*')
+ break;
+ f=1;
+ index1=j;
+ break;
+ }
+ }
+ if(f==1)
+ {
+ reduce();
+ }
+ else
+ {
+ shift();
+ i++;
+ continue;
+ }
+ }
+}
